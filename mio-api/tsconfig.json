@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    
+    // ------------------------------------------------------------------
+    // EL CAMBIO CLAVE: Usamos 'ESNext' para evitar la estrictez de 'NodeNext'
+    // que obliga a usar las extensiones .js en las importaciones.
+    // ------------------------------------------------------------------
+    "module": "ESNext",
+    
+    // Mantenemos la resolución clásica, que permite omitir extensiones.
+    "moduleResolution": "Node", 
+    
+    // --- Opciones Estándar de Proyecto ---
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "isolatedModules": true, // Necesario para 'tsx'
+    "moduleDetection": "force",
+    
+    // --- Rigor y Tipado ---
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022"],
+    
+    // Otros
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
