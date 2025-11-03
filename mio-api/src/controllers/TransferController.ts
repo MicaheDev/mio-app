@@ -3,6 +3,7 @@ import { DeclareTransferDTO } from "../model/Transfer";
 import { Database } from "../config/database";
 import { v4 as uuidv4 } from "uuid";
 import { ApiError } from "../model/Error";
+import { CashRegisterDTO } from "../model/CashBills";
 
 const db = Database.getInstance().getDB();
 const CUSTODIAN_ROLE = "custodian";
@@ -80,4 +81,10 @@ export const TransferController = {
       next(error);
     }
   },
+  
+  async cashRegister(req: Request<{},{},CashRegisterDTO>, res: Response, next: NextFunction){
+    const {transfer_id, cash_bills} = req.body
+
+    res.json({"result": cash_bills})
+  }
 };
