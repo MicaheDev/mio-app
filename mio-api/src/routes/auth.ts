@@ -1,12 +1,9 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
-import {
-  loginSchema,
-  registerSchema,
-  validate,
-} from "../middlewares/validations";
+import { validate } from "../middlewares/validations";
 import { authHandler } from "../middlewares/authHandler";
 import { adminHandler } from "../middlewares/adminHandler";
+import { loginSchema, registerSchema } from "../model/User";
 
 const authRoutes = Router();
 

@@ -5,7 +5,7 @@
 export class ApiError extends Error {
   // Código de estado HTTP (e.g., 400, 401, 409)
   public status: number;
-  
+
   // Mensaje legible para el cliente
   public message: string;
 
@@ -13,7 +13,7 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
     this.message = message;
-    
+
     // Configuración para el motor de Node.js (opcional pero recomendado)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ApiError);
@@ -21,20 +21,31 @@ export class ApiError extends Error {
   }
 
   // Métodos estáticos para errores comunes (facilita el uso en el controller)
-  static unauthorized(message: string = "Credenciales de autenticación no válidas."): ApiError {
+
+  public static badRequest(message: string): ApiError {
+    return new ApiError(400, message);
+  }
+
+  public static notFound(message: string): ApiError {
+    return new ApiError(404, message);
+  }
+  public static unauthorized(
+    message: string = "Credenciales de autenticación no válidas."
+  ): ApiError {
     return new ApiError(401, message);
   }
 
-  static forbidden(message: string = "Prohibido el acceso."): ApiError {
+  public static forbidden(message: string = "Prohibido el acceso."): ApiError {
     return new ApiError(403, message);
   }
 
-
-  static conflict(message: string = "El recurso ya existe."): ApiError {
+  public static conflict(message: string = "El recurso ya existe."): ApiError {
     return new ApiError(409, message);
   }
 
-  static internal(message: string = "Error interno del servidor."): ApiError {
+  public static internal(
+    message: string = "Error interno del servidor."
+  ): ApiError {
     return new ApiError(500, message);
   }
 }

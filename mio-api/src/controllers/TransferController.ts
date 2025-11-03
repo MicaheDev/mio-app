@@ -1,42 +1,83 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { Request, Response, NextFunction } from "express";
+import { DeclareTransferDTO } from "../model/Transfer";
+import { Database } from "../config/database";
+import { v4 as uuidv4 } from "uuid";
+import { ApiError } from "../model/Error";
 
-// 1. Definimos el tipo de archivo de Multer para usarlo internamente
-type MulterFile = Express.Multer.File;
-
-// 2. Definimos la Interfaz para los campos de texto del formulario (si es necesaria)
-interface TransactionFormData {
-  sender_id: string;
-  declared_amount: number;
-  transaction_reference: string;
-  transaction_date: string;
-}
-
+const db = Database.getInstance().getDB();
+const CUSTODIAN_ROLE = "custodian";
+const SENDER_ROLE = "sender"; // Nueva constante para claridad
+const INITIAL_STATUS = "DECLARED";
 
 export const TransferController = {
-    // 3. Declaramos la función como RequestHandler para satisfacer a Express
-    createTransfer: ((req: Request, res: Response, next: NextFunction) => {
+  async declareTransfer(
+    req: Request<{}, {}, DeclareTransferDTO>,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { sender_id, declared_amount, transaction_date } = req.body;
 
-        // Casteamos el cuerpo para asegurar los tipos de los campos de texto
-        const formData = req.body as TransactionFormData;
-        
-        // **Clave de la Solución:**
-        // Afirmamos que 'req.files' será un array de archivos (el resultado de upload.any()).
-        // Esto evita el conflicto de tipado con la sobrecarga de Express.
-        const files = req.files as MulterFile[] | undefined; 
+      const existsSql = "SELECT role FROM users WHERE id = ?";
 
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: "Se requiere la imagen (screenshot)." });
-        }
-        
-        const screenshotFile = files[0];
+      const senderExists = db.prepare(existsSql).get(sender_id) as
+        | { role: string }
+        | undefined;
 
-        // Lógica de Negocio
-        console.log("Datos de la Transacción:", formData);
-        console.log("Información del Screenshot:", screenshotFile);
+      if (!senderExists) {
+        // Usar ApiError para errores de negocio
+        return next(
+          ApiError.badRequest("Error: El remitente (sender_id) no existe.")
+        );
+      }
 
-        // ... Guardar archivo y registrar transacción ...
+      if (senderExists.role !== SENDER_ROLE)
+        return next(
+          ApiError.forbidden(
+            "Acceso denegado. Se requiere el rol de remitente para declarar transferencias."
+          )
+        );
 
-        res.status(201).json({ message: "Transacción recibida y en proceso." });
+      const custodianSql = "SELECT id FROM users WHERE role = ?";
 
-    }) as RequestHandler, // 4. El 'as RequestHandler' final asegura el cumplimiento del contrato.
+      const custodian = db.prepare(custodianSql).get(CUSTODIAN_ROLE) as
+        | { id: string }
+        | undefined;
+
+      if (!custodian || !custodian.id) {
+        // Usar un 500 si la estructura de la app requiere que exista un custodio.
+        return next(
+          new ApiError(
+            412,
+            `Error de configuración: No se encontró ningún custodio.`
+          )
+        );
+      }
+
+      const id = uuidv4();
+      const custodian_id = custodian.id;
+
+      const transferToDeclareSql = `INSERT INTO transfers (id, sender_id, custodian_id, declared_amount, transaction_date, cash_photo_url, status) 
+        VALUES (?,?,?,?,?,NULL,?)`; // cash_photo_url es NULL en el inicio
+
+      db.prepare(transferToDeclareSql).run(
+        id,
+        sender_id,
+        custodian_id,
+        declared_amount,
+        transaction_date,
+        INITIAL_STATUS
+      );
+
+      return res.status(201).json({
+        success: true,
+        message:
+          "Transferencia declarada exitosamente. Pendiente de registro por el custodio.",
+        transfer_id: id,
+        custodian_id: custodian_id,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

@@ -1,36 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { z, ZodError, ZodObject } from "zod"; // Importamos AnyZodObject
+import { ZodError, ZodObject } from "zod"; // Importamos AnyZodObject
 import { ApiError } from "../model/Error";
-
-// Esquema base para el formato de contraseña
-const passwordSchema = z
-  .string()
-  .min(8, "La contraseña debe tener al menos 8 caracteres.")
-  .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayúscula.")
-  .regex(/[a-z]/, "La contraseña debe contener al menos una letra minúscula.")
-  .regex(/[0-9]/, "La contraseña debe contener al menos un número.")
-  .regex(
-    /[^A-Za-z0-9]/,
-    "La contraseña debe contener al menos un carácter especial."
-  );
-
-// 1. Esquema de Registro
-export const registerSchema = z.object({
-  name: z.string().min(3, "El nombre debe tener al menos 3 caracteres."),
-  email: z.string().email("El formato de email no es válido."),
-  password: passwordSchema,
-  role: z
-    .enum(["sender", "validator", "admin"], {
-      error: "El rol es obligatorio.",
-    })
-    .default("sender"),
-});
-
-// 2. Esquema de Login
-export const loginSchema = z.object({
-  email: z.string().email("El formato de email no es válido."),
-  password: z.string().min(1, "La contraseña es obligatoria."),
-});
 
 /**
  * Middleware de validación genérico.
@@ -38,7 +8,9 @@ export const loginSchema = z.object({
  * @param schema El esquema Zod a validar (debe ser un AnyZodObject).
  */
 export const validate =
-  (schema: ZodObject) => // Tipo correcto para el esquema
+  (
+    schema: ZodObject // Tipo correcto para el esquema
+  ) =>
   (req: Request, _res: Response, next: NextFunction) => {
     // Si la validación falla, next() se llama con el error 400.
     try {
