@@ -1,5 +1,5 @@
 import { Database } from "../config/database";
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import { ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD } from "../config/environment";
 

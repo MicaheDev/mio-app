@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from "express";
 import { Database } from "../config/database";
 import { User, UserLoginDTO, UserRegisterDTO } from "../model/User";
-import { compare, hash } from "bcrypt";
+import { compare, hash } from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/environment";
 import { v4 as uuidv4 } from "uuid";
