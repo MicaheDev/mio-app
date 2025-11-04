@@ -14,7 +14,6 @@ export interface Transfer {
 // Interfaz para los datos que se esperan del cuerpo de la solicitud POST (req.body)
 // Nota: 'screenshot_url' no se incluye porque se genera al subir el archivo.
 export interface TransferDTO {
-  sender_id: string;
   declared_amount: number;
   transaction_date: string;
 }
@@ -22,11 +21,6 @@ export interface TransferDTO {
 
 // Define el esquema para los datos requeridos al declarar una transferencia
 export const DeclareTransferSchema = z.object({
-  sender_id: z
-    .string({
-      error: "El ID del remitente es requerido.",
-    })
-    .uuid("El ID del remitente debe ser un UUID válido."),
 
   declared_amount: z
     .number({

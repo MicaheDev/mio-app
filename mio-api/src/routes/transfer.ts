@@ -9,10 +9,22 @@ import { authHandler } from "../middlewares/authHandler";
 const transferRoutes = Router();
 
 transferRoutes.post(
-  "/",
+  "/declare",
   authHandler,
   validate(DeclareTransferSchema),
   TransferController.declareTransfer
 );
 
-export default transferRoutes
+transferRoutes.post(
+  "/cash-register",
+  authHandler,
+  TransferController.cashRegister
+);
+
+transferRoutes.patch(
+  "/transfer/:transfer_id/verify",
+  authHandler,
+  TransferController.validateTransfer
+);
+
+export default transferRoutes;

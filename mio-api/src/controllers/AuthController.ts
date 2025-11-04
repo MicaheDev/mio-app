@@ -22,7 +22,6 @@ export const AuthController = {
         "SELECT id, role, password_hash FROM users WHERE email = ?";
 
       const existingUser = db.prepare(checkSql).get(email) as User | undefined;
-      console.log(existingUser);
       if (!existingUser) {
         return next(
           ApiError.unauthorized(
