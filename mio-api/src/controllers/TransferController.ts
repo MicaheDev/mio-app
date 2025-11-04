@@ -83,8 +83,28 @@ export const TransferController = {
   },
   
   async cashRegister(req: Request<{},{},CashRegisterDTO>, res: Response, next: NextFunction){
-    const {transfer_id, cash_bills} = req.body
+    const {transfer_id, cash_bills, cash_photo_url} = req.body
 
-    res.json({"result": cash_bills})
+    db.exec("BEGIN TRANSACTION")
+
+    try{
+      const bills = db.prepare("INSERT INTO registered_bills (id, transfer_id, denomination, serial_code) VALUES (?,?,?,?);")
+      if(cash_bills.length <= 0){
+        return next(ApiError.badRequest("There's no bills added"))
+      }
+
+      cash_bills.forEach(({denomination,serial_code}) => {
+        const id = uuidv4()
+
+        bills.run(id,transfer_id,denomination,serial_code)
+      })
+
+      db.exec("COMMIT")
+
+      
+       res.json({"result": cash_bills})
+    }catch{
+      db.exec("ROLLBACK")
+    }
   }
 };
